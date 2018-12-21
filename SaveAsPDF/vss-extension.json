@@ -1,0 +1,74 @@
+{
+    "manifestVersion": 1,
+    "id": "save-as-pdf",
+    "version": "1.37",
+    "name": "SaveAsPdf",
+    "description": "Extension for Wiki tree menu to save the markdown content as pdf.",
+    "publisher": "ms-samples",
+    "public": true,
+    "categories": [
+        "Code"
+    ],
+    "content": {
+        "details": {
+            "path": "overview.md"
+        }
+    },
+    "links": {
+        "learn": {
+            "uri": "https://github.com/Microsoft/vso-extension-samples"
+        }
+    },
+    "icons": {
+        "default": "images/fabrikam-logo.png"
+    },
+    "targets": [
+        {
+            "id": "Microsoft.VisualStudio.Services"
+        }
+    ],
+    "scopes": [
+        "vso.wiki", 
+        "vso.wiki_write"
+    ],
+    "demands": [
+        "api-version/2.0"
+    ],
+    "files": [
+        {
+            "path": "scripts",
+            "addressable": true
+        },
+        {
+            "path": "images",
+            "addressable": true
+        },
+        {
+            "path": "Wiki-Menu.html",
+            "addressable": true
+        },  
+        {
+            "path": "node_modules/vss-web-extension-sdk/lib",
+            "addressable": true
+        },
+        {
+            "path": "node_modules/jspdf/dist",
+            "addressable": true
+        }
+    ],
+    "contributions": [
+        {
+            "id": "wiki-treenode-sample-menu-item",
+            "type": "ms.vss-web.action",
+            "targets": [
+                "ms.vss-wiki-web.wiki-tree-node-menu"
+            ],
+            "properties": {
+                "text": "Save as PDF",
+                "uri": "Wiki-Menu.html",
+                "icon": "images/save.png",
+                "registeredObjectId": "sample-wiki-menu"
+            }
+        }
+    ]
+}

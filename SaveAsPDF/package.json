@@ -1,0 +1,14 @@
+{
+  "name": "save-as-pdf",
+  "version": "1.0.0",
+  "description": "Extension for Wiki tree menu to save the markdown content as pdf.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vivekjilla/vsts-extension-samples/tree/master/SaveAsPDF"
+  },
+  "author": "vijilla",
+  "dependencies": {
+    "jspdf": "^1.4.1",
+    "vss-web-extension-sdk": "^2.109.0"
+  }
+}
