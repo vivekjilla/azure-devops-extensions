@@ -21,52 +21,62 @@ function registerContribution(contribution) {
             execute: async context => {
                 var item = context.treeItem;
                 var wiki = context.wiki;
+                var pdfName = item.name;
                 VSS.require(["VSS/Service", "TFS/Wiki/WikiRestClient"], function(VSS_Service, TFS_Wiki_WebApi) {
                     // Get the REST client
                     var wikiClient = VSS_Service.getClient(TFS_Wiki_WebApi.WikiHttpClient);
-                    wikiClient.getPageText(wiki.projectId, wiki.id, item.fullName).then(function(pageContent) {
-                        VSS.getService("ms.vss-wiki-web.wiki-extension-data-service").then(dataService => {
-                            dataService.getHtmlContent(pageContent).then(htmlContent => {
-                                var pdf = new jsPDF("p", "pt", "a4");
-                                var pageWidth = pdf.internal.pageSize.getWidth();
-                                var margin = 25;
-                                pdf.setFontSize(18);
+
+                    wikiClient.getPage(wiki.projectId, wiki.id, item.fullName, 1).then(response => {
+                        var subPagesObj = response.page.subPages;
+
+                        var htmlContentPromises = [];
+                        htmlContentPromises.push(
+                            wikiClient.getPageText(wiki.projectId, wiki.id, item.fullName).then(function(pageContent) {
+                                return VSS.getService("ms.vss-wiki-web.wiki-extension-data-service").then(dataService => {
+                                    return dataService.getHtmlContent(pageContent).then(htmlContent => {
+                                        return { title: item.fullName, content: htmlContent, index: 0 };
+                                    });
+                                });
+                            })
+                        );
+                        subPagesObj.forEach((page, i) => {
+                            htmlContentPromises.push(
+                                wikiClient.getPageText(wiki.projectId, wiki.id, page.path).then(function(pageContent) {
+                                    return VSS.getService("ms.vss-wiki-web.wiki-extension-data-service").then(dataService => {
+                                        return dataService.getHtmlContent(pageContent).then(htmlContent => {
+                                            return { title: page.path, content: htmlContent, index: i + 1 };
+                                        });
+                                    });
+                                })
+                            );
+                        });
+
+                        Q.all(htmlContentPromises).then(response => {
+                            var dict = {};
+                            response.forEach(v => (dict[v.index] = { title: v.title, content: v.content }));
+                            var pdf = new jsPDF("p", "pt", "a4");
+                            var pageWidth = pdf.internal.pageSize.getWidth();
+                            var margin = 25;
+                            pdf.setFontSize(18);
+
+                            for (var i = 0; i < subPagesObj.length + 1; i++) {
+                                pdf.text(dict[i].title, margin, margin);
                                 pdf.fromHTML(
-                                    htmlContent,
+                                    dict[i].content,
                                     margin, // x coord
-                                    margin,
+                                    2 * margin,
                                     {
                                         // y coord
                                         width: pageWidth - 2 * margin // max width of content on PDF
                                     }
                                 );
-                                pdf.save(item.name + ".pdf");
-                            });
-                            return dataService;
-                        });
-                        /* 
-                        console.log(pageContent);
-                        var doc = new jsPDF({ orientation: "portrait", unit: "mm", lineHeight: 1 });
-                        var margin = 10;
-                        var textHeight = 4;
-                        var pageHeight = doc.internal.pageSize.getHeight();
-                        var pageWidth = doc.internal.pageSize.getWidth();
-                        var splitContent = doc.splitTextToSize(pageContent, pageWidth - 2 * margin);
-
-                        doc.setFontSize(textHeight * 4);
-                        var positionY = margin;
-                        for (var i = 0; i < splitContent.length; i++) {
-                            doc.setFontSize(textHeight * 4);
-                            if (positionY + textHeight > pageHeight - margin) {
-                                doc.addPage();
-                                positionY = margin;
+                                if (i < subPagesObj.length) {
+                                    pdf.addPage();
+                                }
                             }
-                            doc.text(splitContent[i], margin, positionY + textHeight);
-                            positionY += textHeight + 4;
-                        }
-                        doc.save(item.name + ".pdf"); */
+                            pdf.save(pdfName + ".pdf");
+                        });
                     });
-                    // ...
                 });
             }
         };

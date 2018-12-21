@@ -9,6 +9,7 @@
   "author": "vijilla",
   "dependencies": {
     "jspdf": "^1.4.1",
+    "q": "^1.5.1",
     "vss-web-extension-sdk": "^2.109.0"
   }
 }
