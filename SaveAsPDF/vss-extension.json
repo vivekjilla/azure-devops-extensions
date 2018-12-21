@@ -1,7 +1,7 @@
 {
     "manifestVersion": 1,
     "id": "save-as-pdf",
-    "version": "1.37",
+    "version": "1.39",
     "name": "SaveAsPdf",
     "description": "Extension for Wiki tree menu to save the markdown content as pdf.",
     "publisher": "ms-samples",
